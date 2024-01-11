@@ -15,7 +15,6 @@ let initialState = {
 let state = initialState;
 let wrapper = document.querySelector('.wrapper');
 
-
 chrome.runtime.onMessage.addListener(
 	function(request, sender, sendResponse) {
 		console.log('localStorage change detected', request.data);
