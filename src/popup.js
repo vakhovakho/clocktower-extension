@@ -1,3 +1,7 @@
+import { jwtDecode } from "jwt-decode";
+import { loadStyles, throwErrorAndResetState } from "./functions";
+import { LOAD_STYLES, UNLOAD_STYLES } from "./actions";
+
 let PLAYER_TYPE = {
 	PLAYER: 'player',
 	STORYTELLER: 'storyteller',
@@ -14,6 +18,27 @@ let initialState = {
 
 let state = initialState;
 let wrapper = document.querySelector('.wrapper');
+let styleCheckbox = document.getElementById('style');
+
+chrome.storage.local.get(['styleLoaded'], function(result) {
+	if (result.styleLoaded) {
+		styleCheckbox.checked = true;
+	}
+});
+
+styleCheckbox.addEventListener('change', function() {
+	if (styleCheckbox.checked) {
+		chrome.storage.local.set({ styleLoaded: 1 });
+		chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+			chrome.tabs.sendMessage(tabs[0].id, { action: LOAD_STYLES });
+		});
+	} else {
+		chrome.storage.local.set({ styleLoaded: 0 });
+		chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+			chrome.tabs.sendMessage(tabs[0].id, { action: UNLOAD_STYLES });
+		});
+	}
+});
 
 chrome.runtime.onMessage.addListener(
 	function(request, sender, sendResponse) {
@@ -40,18 +65,6 @@ executeScript(
 	}
 );
 
-
-function throwErrorAndResetState(text) {
-	wrapper.innerHTML = '';
-	wrapper.textContent = text;
-	wrapper.classList.add('error');
-	state = initialState;
-}
-
-function onStorageChange(storage) {
-	console.log(storage);
-	console.log("changed!");
-}
 
 function main({ token, game, players, storytellers, playerNames }) {
 	if (!token) {
@@ -83,7 +96,7 @@ function main({ token, game, players, storytellers, playerNames }) {
 		return;
 	}
 
-	if(localStorage.getItem('lastVote') && Number(localStorage.getItem('lastVote')) > Date.now() - 1000 * 60 * 30) {
+	if (localStorage.getItem('lastVote') && Number(localStorage.getItem('lastVote')) > Date.now() - 1000 * 60 * 30) {
 		throwErrorAndResetState('You can only use this extension once every 30 minutes.');
 		return;
 	}
@@ -161,7 +174,7 @@ function executeScript(scriptFunction, onResult) {
 					function: scriptFunction,
 				},
 				function(results) {
-					onResult(results[0].result);
+					onResult && onResult(results[0].result);
 				}
 			);
 		}
