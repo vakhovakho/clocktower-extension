@@ -1,4 +1,3 @@
-const channels = document.getElementById('channels')
 const observerOptions = {
 	childList: true,
 	subtree: true,
@@ -6,7 +5,8 @@ const observerOptions = {
 
 const observer = new MutationObserver(records => {
 	for (let i = 0; i < records.length; i++) {
-		if (records[i].target.classList.contains('channel')) {
+		let targetClasses = records[i].target.classList;
+		if (targetClasses.contains('channel') || targetClasses.contains('list')) {
 			hideSTVideos();
 			moveSTVideoFromWhisperAfterDelay();
 		}
@@ -14,7 +14,13 @@ const observer = new MutationObserver(records => {
 });
 
 export function startChannelsObserver() {
-	observer.observe(channels, observerOptions);
+	let interval = setInterval(() => {
+		const channels = document.getElementById('channels')
+		if (channels) {
+			observer.observe(channels, observerOptions);
+			clearInterval(interval);
+		}
+	}, 2000);
 }
 
 export function stopChannelsObserver() {
@@ -40,8 +46,10 @@ function moveSTVideoFromWhisper() {
 			videoDiv.classList.add('video')
 
 			videoDiv.appendChild(newVideo);
-			chats[i].querySelector('.video')?.remove()
-			chats[i].appendChild(videoDiv);
+			if (chats[i]) {
+				chats[i].querySelector('.video')?.remove()
+				chats[i].appendChild(videoDiv);
+			}
 		}
 	}
 }
