@@ -7,8 +7,15 @@ const observer = new MutationObserver(records => {
 	for (let i = 0; i < records.length; i++) {
 		let targetClasses = records[i].target.classList;
 		if (targetClasses.contains('channel') || targetClasses.contains('list')) {
-			hideSTVideos();
-			moveSTVideoFromWhisperAfterDelay();
+			let storytellerDivs = document.querySelectorAll('#whispers li.video.storyteller')
+			for (let i = 0; i < storytellerDivs.length; i++) {
+				let video = storytellerDivs[i].querySelector('video');
+				if (video) {
+					hideSTVideo(i);
+					moveSTVideoFromWhisperAfterDelay(i, video);
+				}
+			}
+			break;
 		}
 	}
 });
@@ -27,14 +34,12 @@ export function stopChannelsObserver() {
 	observer.disconnect();
 }
 
-function moveSTVideoFromWhisper() {
-	let storytellerDivs = document.querySelectorAll('#whispers li.video.storyteller')
-	let chats = document.querySelectorAll('ul.storytellers .storyteller .chat')
-
-	for (let i = 0; i < storytellerDivs.length; i++) {
-
-		let video = storytellerDivs[i].querySelector('video');
-		if (video) {
+function moveSTVideoFromWhisper(index, video) {
+	console.log('moveSTVideoFromWhisper', index);
+	let storyTellerDivsOutside = document.querySelectorAll('ul.storytellers li.storyteller')
+	for (let i = 0; i < storyTellerDivsOutside.length; i++) {
+		if (i === index) {
+			console.log("aaaa");
 			let newVideo = document.createElement('video')
 			newVideo.autoplay = true;
 			newVideo.playsInline = true;
@@ -46,22 +51,28 @@ function moveSTVideoFromWhisper() {
 			videoDiv.classList.add('video')
 
 			videoDiv.appendChild(newVideo);
-			if (chats[i]) {
-				chats[i].querySelector('.video')?.remove()
-				chats[i].appendChild(videoDiv);
+			let chat = storyTellerDivsOutside[i].querySelector('.chat');
+			if (chat) {
+				console.log("bbbb")
+				chat.querySelector('.video')?.remove()
+				chat.appendChild(videoDiv);
 			}
+			break;
 		}
 	}
+
 }
 
-function moveSTVideoFromWhisperAfterDelay() {
-	setTimeout(moveSTVideoFromWhisper, 0);
+function moveSTVideoFromWhisperAfterDelay(index, video) {
+	setTimeout(moveSTVideoFromWhisper, 0, index, video);
 }
 
-function hideSTVideos() {
-	let chats = document.querySelectorAll('ul.storytellers .storyteller .chat')
+function hideSTVideo(index) {
+	let chats = document.querySelectorAll('ul.storytellers .storyteller')
 	for (let i = 0; i < chats.length; i++) {
-		chats[i].querySelector('.video')?.remove()
+		if (i === index) {
+			chats[i].querySelector('.video')?.remove()
+		}
 	}
 }
 
