@@ -7,12 +7,13 @@ const observer = new MutationObserver(records => {
 	for (let i = 0; i < records.length; i++) {
 		let targetClasses = records[i].target.classList;
 		if (targetClasses.contains('channel') || targetClasses.contains('list')) {
-			let storytellerDivs = document.querySelectorAll('#whispers li.video.storyteller')
-			for (let i = 0; i < storytellerDivs.length; i++) {
-				let video = storytellerDivs[i].querySelector('video');
-				if (video) {
-					hideSTVideo(i);
-					moveSTVideoFromWhisperAfterDelay(i, video);
+			let stNames = document.querySelectorAll('#whispers li.video.storyteller .name');
+			for (let i = 0; i < stNames.length; i++) {
+				let video = stNames[i].querySelector('video');
+				let name = stNames[i].innerText;
+				if (video && name) {
+					hideSTVideo(name.trim());
+					moveSTVideoFromWhisperAfterDelay(name, video);
 				}
 			}
 			break;
@@ -34,12 +35,12 @@ export function stopChannelsObserver() {
 	observer.disconnect();
 }
 
-function moveSTVideoFromWhisper(index, video) {
-	console.log('moveSTVideoFromWhisper', index);
+function moveSTVideoFromWhisper(name, video) {
+	console.log('moveSTVideoFromWhisper', name);
 	let storyTellerDivsOutside = document.querySelectorAll('ul.storytellers li.storyteller')
 	for (let i = 0; i < storyTellerDivsOutside.length; i++) {
-		if (i === index) {
-			console.log("aaaa");
+		let bottomName = storyTellerDivsOutside[i].querySelector('div.name span')?.innerText;
+		if (name.startsWith(bottomName)) {
 			let newVideo = document.createElement('video')
 			newVideo.autoplay = true;
 			newVideo.playsInline = true;
@@ -53,7 +54,6 @@ function moveSTVideoFromWhisper(index, video) {
 			videoDiv.appendChild(newVideo);
 			let chat = storyTellerDivsOutside[i].querySelector('.chat');
 			if (chat) {
-				console.log("bbbb")
 				chat.querySelector('.video')?.remove()
 				chat.appendChild(videoDiv);
 			}
@@ -63,8 +63,8 @@ function moveSTVideoFromWhisper(index, video) {
 
 }
 
-function moveSTVideoFromWhisperAfterDelay(index, video) {
-	setTimeout(moveSTVideoFromWhisper, 0, index, video);
+function moveSTVideoFromWhisperAfterDelay(name, video) {
+	setTimeout(moveSTVideoFromWhisper, 200, name, video);
 }
 
 function hideSTVideo(index) {
