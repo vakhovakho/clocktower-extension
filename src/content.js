@@ -1,12 +1,12 @@
 import { LOAD_STYLES, UNLOAD_STYLES } from "./actions";
-import { startChannelsObserver, stopChannelsObserver } from "./channelsObserver";
+import { startCenterObserver, stopCenterObserver } from "./centerObserver";
 import { loadStyles, throwErrorAndResetState } from "./functions";
 
 chrome.storage.local.get(["styleLoaded"]).then(async (result) => {
 	if (result.styleLoaded === 1) {
 		try {
 			await loadStyles();
-			startChannelsObserver();
+			startCenterObserver()
 		} catch (e) {
 			console.error(e);
 		}
@@ -16,7 +16,7 @@ chrome.storage.local.get(["styleLoaded"]).then(async (result) => {
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	if (request.action === LOAD_STYLES) {
 		loadStyles();
-		startChannelsObserver();
+		stopCenterObserver();
 	}
 
 	if (request.action === UNLOAD_STYLES) {
@@ -24,7 +24,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 		if (style) {
 			style.remove();
 		}
-		stopChannelsObserver();
+		stopCenterObserver();
 	}
 });
 
