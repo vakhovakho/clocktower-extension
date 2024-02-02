@@ -19,6 +19,12 @@
       "128": "icon.png"
     }
   },
+  "web_accessible_resources": [
+	{
+      "resources": ["custom-css.css"],
+      "matches": ["https://online.bloodontheclocktower.com/*"]
+    }
+  ],
   "permissions": ["scripting", "tabs", "storage", "activeTab"],
   "commands": {
     "_execute_action": {

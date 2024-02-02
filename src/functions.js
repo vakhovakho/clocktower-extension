@@ -1,5 +1,6 @@
 export async function loadStyles() {
-	return fetch('https://raw.githubusercontent.com/vakhovakho/clocktower-online-georgia-public/main/custom-css.css')
+	const cssURL = chrome.runtime.getURL('custom-css.css');
+	return fetch(cssURL)
 		.then(response => response.text())
 		.then(css => {
 			let currentStyle = document.getElementById('mastermind-style');

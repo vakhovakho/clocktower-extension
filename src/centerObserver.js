@@ -11,8 +11,9 @@ const observer = new MutationObserver(records => {
 		for (let i = 0; i < stDivsInChat.length; i++) {
 			let inChatChat = stDivsInChat[i].querySelector('.chat');
 			let inChatVideo = stDivsInChat[i].querySelector('.video');
+			let inChatAudio = stDivsInChat[i].querySelector('.audio');
 			let inChatNameDiv = stDivsInChat[i].querySelector('.name');
-			let inChatTokenDive = stDivsInChat[i].querySelector('.token');
+			let inChatTokenDiv = stDivsInChat[i].querySelector('.token');
 			let inChatName = inChatNameDiv.innerText.trim();
 			if (inChatName.startsWith(name)) {
 				stDivsInChat[i].style.position = 'fixed';
@@ -24,7 +25,7 @@ const observer = new MutationObserver(records => {
 				inChatVideo.style.borderColor = '#6fbc6f';
 
 				inChatNameDiv.style.display = 'none';
-				inChatTokenDive.style.display = 'none';
+				inChatTokenDiv.style.display = 'none';
 
 			}
 		}
