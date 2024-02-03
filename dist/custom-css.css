@@ -37,6 +37,24 @@ ul#whispers .video .chat:hover {
 	opacity: 1 !important;
 }
 
+#grimoire.night .player.has-video video {
+	display: none;
+}
+
+#grimoire.night .player.has-video .token {
+	left: 0 !important;
+	top: 0 !important;
+	width: 100% !important;
+	border-width: 3px !important;
+}
+
+#grimoire.night .player.has-video .shroud {
+	left: 0 !important;
+	top: 0 !important;
+	width: 100% !important;
+	height: 25% !important;
+}
+
 #grimoire .circle .reminders {
 	opacity: 1 !important;
 }
@@ -68,6 +86,7 @@ li.storyteller.in-whisper:not(.group) .token {
 	opacity: 0 !important;
 }
 
+
 .menu .fa-gear {
 	opacity: 0 !important;
 }
@@ -93,4 +112,3 @@ aside.tab .container {
 #version .timer {
 	display: block !important;
 }
-
