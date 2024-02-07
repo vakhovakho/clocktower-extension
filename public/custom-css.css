@@ -9,6 +9,11 @@ ul.storytellers li.storyteller:not(.group):nth-of-type(2) {
     left: auto !important;
     right: 80px !important;
 }
+
+ul.storytellers li.storyteller:not(.group):first-of-type .reminders,
+ul.storytellers li.storyteller:not(.group):nth-of-type(2) .reminders {
+	transform: rotate(-90deg) !important;
+}
 .in-chat.storyteller .chat {
     opacity: 1 !important;
 }
