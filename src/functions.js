@@ -15,10 +15,4 @@ export async function loadStyles() {
 		})
 }
 
-export function throwErrorAndResetState(text) {
-	wrapper.innerHTML = '';
-	wrapper.textContent = text;
-	wrapper.classList.add('error');
-	state = initialState;
-}
 

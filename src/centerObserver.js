@@ -11,7 +11,7 @@ const observer = new MutationObserver(records => {
 		for (let j = 0; j < stDivsInChat.length; j++) {
 			let inChatChat = stDivsInChat[j].querySelector('.chat');
 			let inChatVideo = stDivsInChat[j].querySelector('.video');
-			let inChatAudio = stDivsInChat[i].querySelector('.audio');
+			let inChatAudio = stDivsInChat[j].querySelector('.audio');
 			let inChatNameDiv = stDivsInChat[j].querySelector('.name');
 			let inChatTokenDiv = stDivsInChat[j].querySelector('.token');
 			let inChatName = inChatNameDiv.innerText.trim();

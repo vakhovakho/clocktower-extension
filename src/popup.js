@@ -1,5 +1,4 @@
 import { jwtDecode } from "jwt-decode";
-import { loadStyles, throwErrorAndResetState } from "./functions";
 import { LOAD_STYLES, UNLOAD_STYLES } from "./actions";
 
 let PLAYER_TYPE = {
@@ -92,7 +91,7 @@ function main({ token, game, players, storytellers, playerNames }) {
 	}
 
 	if (game.history[game.history.length - 1].type !== 'end') {
-		throwErrorAndResetState('The game must be over to use this extension.');
+		throwErrorAndResetState('The game must be over to rate players.');
 		return;
 	}
 
@@ -179,4 +178,10 @@ function executeScript(scriptFunction, onResult) {
 			);
 		}
 	});
+}
+export function throwErrorAndResetState(text) {
+	wrapper.innerHTML = '';
+	wrapper.textContent = text;
+	wrapper.classList.add('error');
+	state = initialState;
 }

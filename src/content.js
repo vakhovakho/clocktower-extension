@@ -1,6 +1,6 @@
 import { LOAD_STYLES, UNLOAD_STYLES } from "./actions";
 import { startCenterObserver, stopCenterObserver } from "./centerObserver";
-import { loadStyles, throwErrorAndResetState } from "./functions";
+import { loadStyles } from "./functions";
 
 chrome.storage.local.get(["styleLoaded"]).then(async (result) => {
 	if (result.styleLoaded === 1) {
