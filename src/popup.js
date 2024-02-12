@@ -1,5 +1,6 @@
 import { jwtDecode } from "jwt-decode";
 import { LOAD_STYLES, UNLOAD_STYLES } from "./actions";
+import { API_URL } from "./env";
 
 let PLAYER_TYPE = {
 	PLAYER: 'player',
@@ -8,7 +9,9 @@ let PLAYER_TYPE = {
 }
 
 let initialState = {
-	userId: null,
+	loggedIn: false,
+	bocToken: null,
+	bocId: null,
 	userType: null,
 	players: [],
 	storytellers: [],
@@ -67,26 +70,30 @@ executeScript(
 
 function main({ token, game, players, storytellers, playerNames }) {
 	if (!token) {
-		throwErrorAndResetState('You must be logged in to use this extension.');
+		throwErrorAndResetState('You must be logged in to rate players.');
 		return;
 	}
 
-	state.userId = jwtDecode(token).id;
+	let accessToken = localStorage.getItem('accessToken');
+
+	state.loggedIn = Boolean(accessToken);
+	state.bocToken = token;
+	state.bocId = jwtDecode(token).id;
 	state.game = game;
 	state.players = players;
 	state.storytellers = storytellers;
 	state.playerNames = playerNames;
 
-	if (players.find(player => player.id === state.userId)) {
+	if (players.find(player => player.id === state.bocId)) {
 		state.userType = PLAYER_TYPE.PLAYER;
 	} else {
-		if (storytellers.find(st => st.id === state.userId)) {
+		if (storytellers.find(st => st.id === state.bocId)) {
 			state.userType = PLAYER_TYPE.STORYTELLER;
 		}
 	}
 
 	if (!state.userType) {
-		throwErrorAndResetState('You must be a player or storyteller to use this extension.');
+		throwErrorAndResetState('You must be a player or storyteller to rate players.');
 		return;
 	}
 
@@ -96,15 +103,123 @@ function main({ token, game, players, storytellers, playerNames }) {
 	}
 
 	if (localStorage.getItem('lastVote') && Number(localStorage.getItem('lastVote')) > Date.now() - 1000 * 60 * 30) {
-		throwErrorAndResetState('You can only use this extension once every 30 minutes.');
+		throwErrorAndResetState('You can rate players once in every 30 minutes.');
 		return;
 	}
 
-	populate();
+	if (!accessToken) {
+		showAuth();
+	} else {
+		populate();
+	}
+}
+
+function showAuth() {
+	wrapper.innerHTML = '';
+
+	let authContainer = document.createElement('div');
+	authContainer.classList.add('auth-container');
+
+	let usernameDiv = document.createElement('div');
+	let usernameLabel = document.createElement('label');
+	usernameLabel.textContent = 'username';
+	usernameLabel.for = 'username';
+	let usernameInput = document.createElement('input');
+	usernameInput.setAttribute('name', 'username');
+	usernameInput.setAttribute('id', 'username');
+	usernameDiv.appendChild(usernameLabel);
+	usernameDiv.appendChild(usernameInput);
+
+	let passwordDiv = document.createElement('div');
+	let passwordLabel = document.createElement('label');
+	passwordLabel.textContent = 'password';
+	passwordLabel.for = 'password';
+	let passwordInput = document.createElement('input');
+	passwordInput.setAttribute('type', 'password');
+	passwordInput.setAttribute('name', 'password');
+	passwordInput.setAttribute('id', 'password');
+	passwordDiv.appendChild(passwordLabel);
+	passwordDiv.appendChild(passwordInput);
+
+
+	let actionsDiv = document.createElement('div');
+	let loginButton = document.createElement('button');
+	loginButton.textContent = 'Login';
+	let registerButton = document.createElement('button');
+	registerButton.textContent = 'Register';
+	actionsDiv.appendChild(loginButton);
+	actionsDiv.appendChild(registerButton);
+
+	authContainer.appendChild(usernameDiv);
+	authContainer.appendChild(passwordDiv);
+	authContainer.appendChild(actionsDiv);
+	wrapper.appendChild(authContainer);
+
+	loginButton.addEventListener('click', () => login(usernameInput.value, passwordInput.value, state.bocId));
+	registerButton.addEventListener('click', () => register(usernameInput.value, passwordInput.value, state.bocId));
+}
+
+function login(username, password, bocId) {
+
+	fetch(API_URL + 'auth/login', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ username, password, bocId })
+	})
+		.then(response => {
+			if (!response.ok) {
+				alert('something went wrong');
+			}
+			return response.json();
+		})
+		.then(data => {
+			localStorage.setItem('accessToken', data.accessToken);
+			populate();
+		})
+		.catch(error => {
+			alert('something went wrong: ' + error.message)
+		});
+}
+
+function register(username, password, bocId) {
+	fetch(API_URL + 'auth/register', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ username, password, bocId })
+	})
+		.then(response => {
+			if (!response.ok) {
+				alert('something went wrong');
+			}
+			return response.json();
+		})
+		.then(data => {
+			populate();
+			localStorage.setItem('accessToken', data.accessToken);
+		})
+		.catch(error => {
+			alert('something went wrong: ' + error.message)
+		});
 
 }
 
+function logout() {
+	localStorage.removeItem('accessToken');
+	showAuth();
+}
+
 function populate() {
+	wrapper.innerHTML = '';
+	let logoutElement = document.createElement('span');
+	logoutElement.classList.add('logout');
+	logoutElement.textContent = 'Logout';
+	logoutElement.addEventListener('click', logout);
+	wrapper.appendChild(logoutElement);
+
 	for (let index in state.players) {
 		let playerId = state.players[index];
 		let playerName = state.playerNames[index];
