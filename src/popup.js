@@ -207,6 +207,36 @@ function register(username, password, bocId) {
 
 }
 
+function sendVote(senderId, senderStatus, receiverId) {
+	fetch(API_URL + 'vote', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': 'JWT ' + localStorage.getItem('accessToken') || ''
+		},
+		body: JSON.stringify({ senderId, senderStatus, receiverId })
+	})
+		.then(response => {
+			if (!response.ok) {
+				if (response.status === 401 || response.status === 403) {
+					localStorage.removeItem('accessToken');
+					showAuth();
+				}
+				throw new Error('Something went wrong');
+			}
+			return response.json();
+		})
+		.then(data => {
+			if(data.status === 'error') {
+				throw new Error(data.message);
+			}
+			alert('Vote sent');
+		})
+		.catch(error => {
+			alert('Error: ' + error.message)
+		});
+}
+
 function logout() {
 	localStorage.removeItem('accessToken');
 	showAuth();
@@ -221,20 +251,21 @@ function populate() {
 	wrapper.appendChild(logoutElement);
 
 	for (let index in state.players) {
-		let playerId = state.players[index];
+		let playerId = state.players[index].id;
 		let playerName = state.playerNames[index];
 
 		let playerDiv = document.createElement('div');
 		playerDiv.classList.add('player');
 
 		let label = document.createElement('label');
-		label.setAttribute('for', playerId + index);
+		label.setAttribute('for', playerId + "_" + index);
 		label.textContent = playerName;
 
 		let input = document.createElement('input');
 		input.type = 'radio';
 		input.setAttribute('name', 'vote');
-		input.id = playerId + index;
+		input.value = playerId;
+		input.id = playerId + "_" + index;
 
 
 		playerDiv.appendChild(label);
@@ -243,13 +274,13 @@ function populate() {
 	}
 
 	let button = document.createElement('button');
-	button.textContent = 'Submit';
-	button.addEventListener('click', submit);
+	button.textContent = 'Rate';
+	button.addEventListener('click', vote);
 
 	wrapper.appendChild(button);
 }
 
-function submit() {
+function getLocalstorageData() {
 	executeScript(
 		function() {
 			let allValues = {};
@@ -268,10 +299,16 @@ function submit() {
 			console.log(result);
 		}
 	)
-	success();
 }
 
-function success() {
+function vote() {
+	let selected = document.querySelector('input[name="vote"]:checked');
+	if (!selected) {
+		alert('Please select a player to vote');
+		return;
+	}
+	let playerId = selected.value;
+	sendVote(state.bocId, state.userType, playerId);
 }
 
 function executeScript(scriptFunction, onResult) {
