@@ -91,9 +91,12 @@ li.storyteller.in-whisper:not(.group) .token {
 	opacity: 0 !important;
 }
 
-
 .menu .fa-gear {
 	opacity: 0 !important;
+}
+
+.menu .fa-gear:hover {
+	opacity: 1 !important;
 }
 
 aside.tab.night-order .label {
@@ -103,6 +106,16 @@ aside.tab.night-order .label {
 
 aside.tab.character .label {
 	opacity: 0 !important;
+	box-shadow: none !important;
+}
+
+aside.tab.night-order .label:hover {
+	opacity: 1 !important;
+	box-shadow: none !important;
+}
+
+aside.tab.character .label:hover {
+	opacity: 1 !important;
 	box-shadow: none !important;
 }
 
