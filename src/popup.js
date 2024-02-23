@@ -1,5 +1,5 @@
 import { jwtDecode } from "jwt-decode";
-import { LOAD_STYLES, UNLOAD_STYLES } from "./actions";
+import { LOAD_STYLES, REMOVE_ACCESS_TOKEN, STORE_ACCESS_TOKEN, UNLOAD_STYLES } from "./actions";
 import { API_URL } from "./env";
 
 let PLAYER_TYPE = {
@@ -9,7 +9,6 @@ let PLAYER_TYPE = {
 }
 
 let initialState = {
-	loggedIn: false,
 	bocToken: null,
 	bocId: null,
 	userType: null,
@@ -74,9 +73,6 @@ function main({ token, game, players, storytellers, playerNames }) {
 		return;
 	}
 
-	let accessToken = localStorage.getItem('accessToken');
-
-	state.loggedIn = Boolean(accessToken);
 	state.bocToken = token;
 	state.bocId = jwtDecode(token).id;
 	state.game = game;
@@ -92,26 +88,24 @@ function main({ token, game, players, storytellers, playerNames }) {
 		}
 	}
 
-	if (!state.userType) {
-		throwErrorAndResetState('You must be a player or storyteller to rate players.');
-		return;
-	}
-
-	if (game.history[game.history.length - 1].type !== 'end') {
-		throwErrorAndResetState('The game must be over to rate players.');
-		return;
-	}
-
-	if (localStorage.getItem('lastVote') && Number(localStorage.getItem('lastVote')) > Date.now() - 1000 * 60 * 30) {
-		throwErrorAndResetState('You can rate players once in every 30 minutes.');
-		return;
-	}
-
-	if (!accessToken) {
+	if (!isAuthorized()) {
 		showAuth();
 	} else {
 		populate();
 	}
+}
+
+function isAuthorized() {
+	let token = localStorage.getItem("accessToken");
+	if (token) {
+		let decoded =jwtDecode(token);
+		if(decoded.exp > Date.now()) {
+			return true;
+		}
+		localStorage.removeItem("accessToken");
+	}
+
+	return false;
 }
 
 function showAuth() {
@@ -170,12 +164,16 @@ function login(username, password, bocId) {
 	})
 		.then(response => {
 			if (!response.ok) {
-				alert('something went wrong');
+				throw new Error('something went wrong');
 			}
 			return response.json();
 		})
 		.then(data => {
 			localStorage.setItem('accessToken', data.accessToken);
+			chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+				chrome.tabs.sendMessage(tabs[0].id, { action: STORE_ACCESS_TOKEN, token: data.accessToken });
+			});
+
 			populate();
 		})
 		.catch(error => {
@@ -193,13 +191,16 @@ function register(username, password, bocId) {
 	})
 		.then(response => {
 			if (!response.ok) {
-				alert('something went wrong');
+				throw new Error('something went wrong');
 			}
 			return response.json();
 		})
 		.then(data => {
 			populate();
 			localStorage.setItem('accessToken', data.accessToken);
+			chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+				chrome.tabs.sendMessage(tabs[0].id, { action: STORE_ACCESS_TOKEN, token: data.accessToken });
+			});
 		})
 		.catch(error => {
 			alert('something went wrong: ' + error.message)
@@ -220,14 +221,19 @@ function sendVote(senderId, senderStatus, receiverId) {
 			if (!response.ok) {
 				if (response.status === 401 || response.status === 403) {
 					localStorage.removeItem('accessToken');
+					chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+						chrome.tabs.sendMessage(tabs[0].id, { action: REMOVE_ACCESS_TOKEN });
+					});
+
 					showAuth();
+				} else {
+					throw new Error('Something went wrong');
 				}
-				throw new Error('Something went wrong');
 			}
 			return response.json();
 		})
 		.then(data => {
-			if(data.status === 'error') {
+			if (data.status === 'error') {
 				throw new Error(data.message);
 			}
 			alert('Vote sent');
@@ -239,11 +245,19 @@ function sendVote(senderId, senderStatus, receiverId) {
 
 function logout() {
 	localStorage.removeItem('accessToken');
+	chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+		chrome.tabs.sendMessage(tabs[0].id, { action: REMOVE_ACCESS_TOKEN });
+	});
 	showAuth();
 }
 
 function populate() {
 	wrapper.innerHTML = '';
+	if (!state.userType) {
+		throwErrorAndResetState('You must be a player or storyteller to rate players.');
+		return;
+	}
+
 	let logoutElement = document.createElement('span');
 	logoutElement.classList.add('logout');
 	logoutElement.textContent = 'Logout';
@@ -278,27 +292,6 @@ function populate() {
 	button.addEventListener('click', vote);
 
 	wrapper.appendChild(button);
-}
-
-function getLocalstorageData() {
-	executeScript(
-		function() {
-			let allValues = {};
-			for (let i = 0; i < localStorage.length; i++) {
-				let key = localStorage.key(i);
-				let value = localStorage.getItem(key);
-				if (value.startsWith("{") || value.startsWith("[")) {
-					value = JSON.parse(value);
-				}
-				allValues[key] = value;
-			}
-			return allValues;
-		},
-		function(result) {
-			localStorage.setItem('lastVote', Date.now());
-			console.log(result);
-		}
-	)
 }
 
 function vote() {
