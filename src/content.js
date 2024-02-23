@@ -14,17 +14,22 @@ chrome.storage.local.get(["styleLoaded"]).then(async (result) => {
 });
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-	if (request.action === LOAD_STYLES) {
-		loadStyles();
-		stopCenterObserver();
-	}
-
-	if (request.action === UNLOAD_STYLES) {
-		let style = document.getElementById('mastermind-style');
-		if (style) {
-			style.remove();
-		}
-		stopCenterObserver();
+	switch (request.action) {
+		case LOAD_STYLES:
+			loadStyles();
+			startCenterObserver();
+			break;
+		case UNLOAD_STYLES:
+			let style = document.getElementById('mastermind-style');
+			if (style) {
+				style.remove();
+			}
+			stopCenterObserver();
+			break;
+		case "ALERT":
+			alert(request.message);
+		default:
+			break;
 	}
 });
 
