@@ -9,6 +9,8 @@ let PLAYER_TYPE = {
 }
 
 let initialState = {
+	game: null,
+	session: null,
 	bocToken: null,
 	bocId: null,
 	userType: null,
@@ -58,6 +60,7 @@ executeScript(
 			game: JSON.parse(localStorage.getItem("game")),
 			players: JSON.parse(localStorage.getItem("players")),
 			storytellers: JSON.parse(localStorage.getItem("storytellers")),
+			session: JSON.parse(localStorage.getItem("session")),
 			playerNames: [...document.querySelectorAll('.nameplate span')].map(span => span.textContent),
 		};
 	},
@@ -67,7 +70,7 @@ executeScript(
 );
 
 
-function main({ token, game, players, storytellers, playerNames }) {
+function main({ token, game, players, storytellers, session, playerNames }) {
 	if (!token) {
 		throwErrorAndResetState('You must be logged in to rate players.');
 		return;
@@ -77,6 +80,7 @@ function main({ token, game, players, storytellers, playerNames }) {
 	state.bocId = jwtDecode(token).id;
 	state.game = game;
 	state.players = players;
+	state.session = session;
 	state.storytellers = storytellers;
 	state.playerNames = playerNames;
 
@@ -98,8 +102,8 @@ function main({ token, game, players, storytellers, playerNames }) {
 function isAuthorized() {
 	let token = localStorage.getItem("accessToken");
 	if (token) {
-		let decoded =jwtDecode(token);
-		if(decoded.exp > Date.now()) {
+		let decoded = jwtDecode(token);
+		if (decoded.exp > Date.now()) {
 			return true;
 		}
 		localStorage.removeItem("accessToken");
@@ -208,14 +212,14 @@ function register(username, password, bocId) {
 
 }
 
-function sendVote(senderId, senderStatus, receiverId) {
-	fetch(API_URL + 'vote', {
+function sendVote(gameId, receiverId) {
+	return fetch(API_URL + 'vote', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
 			'Authorization': 'JWT ' + localStorage.getItem('accessToken') || ''
 		},
-		body: JSON.stringify({ senderId, senderStatus, receiverId })
+		body: JSON.stringify({ gameId, receiverId })
 	})
 		.then(response => {
 			if (!response.ok) {
@@ -301,7 +305,18 @@ function vote() {
 		return;
 	}
 	let playerId = selected.value;
-	sendVote(state.bocId, state.userType, playerId);
+	sendVote(getGameId(state.game, state.session), playerId)
+	.then(() => {
+		wrapper.querySelector('button').disabled = true;
+	})
+}
+
+function getGameId(game, session) {
+	const phase = Array.isArray(game.history[0])
+		? game.history[0][0]
+		: game.history[0];
+
+	return phase.time + ":" + session;
 }
 
 function executeScript(scriptFunction, onResult) {
