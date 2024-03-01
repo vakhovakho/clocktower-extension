@@ -41,8 +41,10 @@ function startTracking() {
 
 	let recentData = {
 		phase: -1,
-		ended: false
+		ended: false,
+		winner: '',
 	}
+	trackEndgame(recentData);
 
 	setInterval(() => {
 		console.log("tracking");
@@ -51,13 +53,47 @@ function startTracking() {
 		if (storageData.game.isRunning && storageData.game.phase !== recentData.phase) {
 			recentData.phase = storageData.game.phase;
 			recentData.ended = false;
+			recentData.winner = ''
 			sendData(storageData);
 		} else if (gameEnded(storageData.game) && !recentData.ended) {
+			storageData.winner = recentData.winner;
 			recentData.ended = true;
 			recentData.phase = -1;
+			recentData.winner = '';
 			sendData(storageData);
 		}
 	}, 5000);
+}
+
+function trackEndgame(recentData) {
+	document.body.addEventListener('click', e => {
+		if (e.target.tagName === 'LI') {
+			if (e.target.textContent.trim().toLowerCase().startsWith('reveal grimoire')) {
+				setTimeout(registerListeners, 0);
+			}
+		}
+
+	})
+
+	document.addEventListener('keyup', e => {
+		if (e.key === "g") {
+			setTimeout(registerListeners, 0)
+		}
+	});
+
+	function registerListeners() {
+		document.querySelectorAll('button').forEach(button => {
+			button.addEventListener('click', () => {
+				let buttonText = button.textContent.trim().toLowerCase();
+				if (buttonText.startsWith('good won')) {
+					recentData.winner = 'good';
+				} else if (buttonText.startsWith('evil won')) {
+					recentData.winner = 'evil'
+				}
+			})
+
+		});
+	}
 }
 
 
@@ -79,13 +115,13 @@ function sendData(data) {
 			'Content-Type': 'application/json',
 			'Authorization': 'JWT ' + localStorage.getItem('mastermindAccessToken') || ''
 		},
-		body: JSON.stringify({data})
+		body: JSON.stringify({ data })
 	})
 		.then(response => {
 			if (!response.ok) {
 				console.log('something went wrong: ' + response.status + ' ' + response.statusText);
 				if (response.status === 401 || response.status === 403) {
-					alert("You are not authorized to use this extension. Please log in and try again.");
+					console.log("You are not authorized to use this extension. Please log in and try again.");
 				}
 			}
 		})
