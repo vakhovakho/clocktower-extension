@@ -60,7 +60,7 @@ executeScript(
 			game: JSON.parse(localStorage.getItem("game")),
 			players: JSON.parse(localStorage.getItem("players")),
 			storytellers: JSON.parse(localStorage.getItem("storytellers")),
-			session: JSON.parse(localStorage.getItem("session")),
+			session: localStorage.getItem("session"),
 			playerNames: [...document.querySelectorAll('.nameplate span')].map(span => span.textContent),
 		};
 	},
