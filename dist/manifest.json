@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Clocktower Stream and Rate",
   "description": "This extension is made in order to Stream Blood on the Clocktower game and also rate players",
-  "version": "0.5.1",
+  "version": "0.7.0",
   "author": "vakho.nakashidze@gmail.com",
   "icons": {
     "16": "icon.png",
@@ -25,7 +25,7 @@
         "custom-css.css"
       ],
       "matches": [
-        "https://online.bloodontheclocktower.com/*"
+        "https://botc.app/*"
       ]
     }
   ],
@@ -48,7 +48,7 @@
     "declarativeNetRequestWithHostAccess"
   ],
   "host_permissions": [
-    "*://*.bloodontheclocktower.com/*"
+    "*://*.botc.app/*"
   ],
   "commands": {
     "_execute_action": {
@@ -61,7 +61,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://online.bloodontheclocktower.com/*"
+        "https://botc.app/*"
       ],
       "js": [
         "./assets/content-fjRuiQTg.js"

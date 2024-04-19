@@ -9,7 +9,7 @@
       }
     },
     "condition": {
-      "urlFilter": "||online.bloodontheclocktower.com/backend/roles",
+      "urlFilter": "||botc.app/backend/roles",
       "resourceTypes": ["xmlhttprequest"]
     }
   }

@@ -342,7 +342,7 @@ function executeScript(scriptFunction, onResult) {
 		const activeTab = tabs[0];
 		if (!activeTab) return;
 
-		if (!activeTab.url.includes('online.bloodontheclocktower.com')) {
+		if (!activeTab.url.includes('botc.app')) {
 			throwErrorAndResetState('You must be on the Blood on the Clocktower website to use this extension.');
 		} else {
 			chrome.scripting.executeScript(

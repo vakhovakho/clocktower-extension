@@ -25,7 +25,7 @@ function updateManifest(builtJs, key) {
 		case 'content_scripts':
 			manifest[key] = [
 				{
-					matches: ["https://online.bloodontheclocktower.com/*"],
+					matches: ["https://botc.app/*"],
 					js: [builtJs]
 				}
 			];
