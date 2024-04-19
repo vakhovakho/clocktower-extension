@@ -22,10 +22,17 @@ let initialState = {
 let state = initialState;
 let wrapper = document.querySelector('.wrapper');
 let styleCheckbox = document.getElementById('style');
+let translateCheckbox = document.getElementById('translate');
 
 chrome.storage.local.get(['styleLoaded'], function(result) {
 	if (result.styleLoaded) {
 		styleCheckbox.checked = true;
+	}
+});
+
+chrome.storage.local.get(['translate'], function(result) {
+	if (result.translate) {
+		translateCheckbox.checked = true;
 	}
 });
 
@@ -41,6 +48,17 @@ styleCheckbox.addEventListener('change', function() {
 			chrome.tabs.sendMessage(tabs[0].id, { action: UNLOAD_STYLES });
 		});
 	}
+});
+
+translateCheckbox.addEventListener('change', function() {
+	chrome.storage.local.set({ translate: Number(translateCheckbox.checked) });
+	chrome.runtime.sendMessage({ translate: translateCheckbox.checked }, function(response) {
+		executeScript(
+			function() {
+				window.location.reload();
+			}
+		);
+	});
 });
 
 chrome.runtime.onMessage.addListener(
@@ -306,9 +324,9 @@ function vote() {
 	}
 	let playerId = selected.value;
 	sendVote(getGameId(state.game, state.session), playerId)
-	.then(() => {
-		wrapper.querySelector('button').disabled = true;
-	})
+		.then(() => {
+			wrapper.querySelector('button').disabled = true;
+		})
 }
 
 function getGameId(game, session) {

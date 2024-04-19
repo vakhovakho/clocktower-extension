@@ -29,11 +29,26 @@
       ]
     }
   ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_1",
+        "enabled": true,
+        "path": "rules_1.json"
+      }
+    ]
+  },
   "permissions": [
     "scripting",
     "tabs",
     "storage",
-    "activeTab"
+    "activeTab",
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "host_permissions": [
+    "*://*.bloodontheclocktower.com/*"
   ],
   "commands": {
     "_execute_action": {
@@ -52,5 +67,9 @@
         "./assets/content-fjRuiQTg.js"
       ]
     }
-  ]
+  ],
+  "background": {
+    "service_worker": "./assets/background-r2R16Z9_.js",
+    "type": "module"
+  }
 }

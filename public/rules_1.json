@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "url": "https://api.clocktower.ge/v1/roles"
+      }
+    },
+    "condition": {
+      "urlFilter": "||online.bloodontheclocktower.com/backend/roles",
+      "resourceTypes": ["xmlhttprequest"]
+    }
+  }
+]
+
