@@ -185,12 +185,13 @@ function login(username, password, bocId) {
 		body: JSON.stringify({ username, password, bocId })
 	})
 		.then(response => {
-			if (!response.ok) {
-				throw new Error('something went wrong');
-			}
 			return response.json();
 		})
 		.then(data => {
+			if(data.status === 'fail') {
+				console.log(data);
+				throw new Error(data.message);
+			}
 			localStorage.setItem('accessToken', data.accessToken);
 			chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
 				chrome.tabs.sendMessage(tabs[0].id, { action: STORE_ACCESS_TOKEN, token: data.accessToken });
@@ -199,7 +200,7 @@ function login(username, password, bocId) {
 			populate();
 		})
 		.catch(error => {
-			alert('something went wrong: ' + error.message)
+			alert('Error: ' + error.message)
 		});
 }
 
@@ -212,9 +213,6 @@ function register(username, password, bocId) {
 		body: JSON.stringify({ username, password, bocId })
 	})
 		.then(response => {
-			if (!response.ok) {
-				throw new Error('something went wrong');
-			}
 			return response.json();
 		})
 		.then(data => {
@@ -225,7 +223,7 @@ function register(username, password, bocId) {
 			});
 		})
 		.catch(error => {
-			alert('something went wrong: ' + error.message)
+			alert('Error: ' + error.message)
 		});
 
 }
@@ -249,13 +247,13 @@ function sendVote(gameId, receiverId) {
 
 					showAuth();
 				} else {
-					throw new Error('Something went wrong');
+					console.log(response);
 				}
 			}
 			return response.json();
 		})
 		.then(data => {
-			if (data.status === 'error') {
+			if (data.status === 'fail') {
 				throw new Error(data.message);
 			}
 			alert('Vote sent');

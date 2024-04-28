@@ -29,14 +29,17 @@ window.onload = function() {
 		}, 5000);
 		return;
 	}
-	if (isStoryteller()) {
-		startTracking();
-	}
+
+	let interval = setInterval(() => {
+		if (isStoryteller() && !isTracking) {
+			startTracking();
+			clearInterval(interval);
+		}
+	}, 60000);
 }
 
 let isTracking = false;
 function startTracking() {
-	if (isTracking) return;
 	isTracking = true;
 
 	let recentData = {
@@ -155,7 +158,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 			alert(request.message);
 		case STORE_ACCESS_TOKEN:
 			localStorage.setItem("mastermindAccessToken", request.token);
-			startTracking();
+			if (isStoryteller() && !isTracking) {
+				startTracking();
+			}
 			break;
 		case REMOVE_ACCESS_TOKEN:
 			localStorage.removeItem("mastermindAccessToken");
