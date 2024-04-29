@@ -189,7 +189,6 @@ function login(username, password, bocId) {
 		})
 		.then(data => {
 			if(data.status === 'fail') {
-				console.log(data);
 				throw new Error(data.message);
 			}
 			localStorage.setItem('accessToken', data.accessToken);
@@ -216,11 +215,14 @@ function register(username, password, bocId) {
 			return response.json();
 		})
 		.then(data => {
-			populate();
+			if(data.status === 'fail') {
+				throw new Error(data.message);
+			}
 			localStorage.setItem('accessToken', data.accessToken);
 			chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
 				chrome.tabs.sendMessage(tabs[0].id, { action: STORE_ACCESS_TOKEN, token: data.accessToken });
 			});
+			populate();
 		})
 		.catch(error => {
 			alert('Error: ' + error.message)
