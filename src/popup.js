@@ -120,6 +120,10 @@ function main({ token, game, players, storytellers, session, playerNames }) {
 function isAuthorized() {
 	let token = localStorage.getItem("accessToken");
 	if (token) {
+		if(token === 'undefined') {
+			localStorage.removeItem("accessToken");
+			return false;
+		}
 		let decoded = jwtDecode(token);
 		if (decoded.exp > Date.now()) {
 			return true;
