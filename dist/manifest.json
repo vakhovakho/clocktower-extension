@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Clocktower Stream and Rate",
   "description": "This extension is made in order to Stream Blood on the Clocktower game and also rate players",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "author": "vakho.nakashidze@gmail.com",
   "icons": {
     "16": "icon.png",
@@ -69,7 +69,7 @@
     }
   ],
   "background": {
-    "service_worker": "./assets/background-r2R16Z9_.js",
+    "service_worker": "./assets/background-e1jYQqE3.js",
     "type": "module"
   }
 }

@@ -23,6 +23,7 @@ let state = initialState;
 let wrapper = document.querySelector('.wrapper');
 let styleCheckbox = document.getElementById('style');
 let translateCheckbox = document.getElementById('translate');
+let backgroundCheckbox = document.getElementById('background');
 
 chrome.storage.local.get(['styleLoaded'], function(result) {
 	if (result.styleLoaded) {
@@ -33,6 +34,12 @@ chrome.storage.local.get(['styleLoaded'], function(result) {
 chrome.storage.local.get(['translate'], function(result) {
 	if (result.translate) {
 		translateCheckbox.checked = true;
+	}
+});
+
+chrome.storage.local.get(['background'], function(result) {
+	if (result.background) {
+		backgroundCheckbox.checked = true;
 	}
 });
 
@@ -59,6 +66,25 @@ translateCheckbox.addEventListener('change', function() {
 			}
 		);
 	});
+});
+
+backgroundCheckbox.addEventListener('change', function() {
+	chrome.storage.local.set({ background: Number(backgroundCheckbox.checked) });
+	if (backgroundCheckbox.checked) {
+		executeScript(
+			function() {
+				localStorage.setItem('background', 'https://api.clocktower.ge/v1/background');
+				window.location.reload();
+			}
+		);
+	} else {
+		executeScript(
+			function() {
+				localStorage.removeItem('background');
+				window.location.reload();
+			}
+		);
+	}
 });
 
 chrome.runtime.onMessage.addListener(
@@ -120,7 +146,7 @@ function main({ token, game, players, storytellers, session, playerNames }) {
 function isAuthorized() {
 	let token = localStorage.getItem("accessToken");
 	if (token) {
-		if(token === 'undefined') {
+		if (token === 'undefined') {
 			localStorage.removeItem("accessToken");
 			return false;
 		}
@@ -192,7 +218,7 @@ function login(username, password, bocId) {
 			return response.json();
 		})
 		.then(data => {
-			if(data.status === 'fail') {
+			if (data.status === 'fail') {
 				throw new Error(data.message);
 			}
 			localStorage.setItem('accessToken', data.accessToken);
@@ -219,7 +245,7 @@ function register(username, password, bocId) {
 			return response.json();
 		})
 		.then(data => {
-			if(data.status === 'fail') {
+			if (data.status === 'fail') {
 				throw new Error(data.message);
 			}
 			localStorage.setItem('accessToken', data.accessToken);

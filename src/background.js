@@ -19,32 +19,35 @@
 // });
 
 // Background script (Service Worker)
+
+chrome.storage.local.get(["translate"]).then((result) => {
+	console.log("translate is" + result.translate);
+	enableOrDisableTranslation(result.translate);
+});
+
 chrome.runtime.onMessage.addListener(
 	async function(message, sender, sendResponse) {
 		console.log("Message received:", message);
 
-
-		if (message.translate) {
-			chrome.declarativeNetRequest.updateStaticRules({
-				rulesetId: "ruleset_1",
-				enableRuleIds: [1]
-			})
-		} else {
-			chrome.declarativeNetRequest.updateStaticRules({
-				rulesetId: "ruleset_1",
-				disableRuleIds: [1]
-			})
-		}
-
+		enableOrDisableTranslation(message.translate);
 		sendResponse({ success: true });
 		// Return true if you want to send a response asynchronously
 		return true;
 	}
 );
 
-function onBeforeRequestListener(details) {
-	if (details.url.includes("backend/roles")) {
-		return { redirectUrl: "https://api.clocktower.ge/v1/roles" };
+function enableOrDisableTranslation(translate) {
+	if (translate) {
+		chrome.declarativeNetRequest.updateStaticRules({
+			rulesetId: "ruleset_1",
+			enableRuleIds: [1]
+		})
+	} else {
+		chrome.declarativeNetRequest.updateStaticRules({
+			rulesetId: "ruleset_1",
+			disableRuleIds: [1]
+		})
 	}
+
 }
 
