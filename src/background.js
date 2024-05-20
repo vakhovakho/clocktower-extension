@@ -1,5 +1,7 @@
 // import { loadStyles } from "./functions";
 
+import { API_URL } from "./env";
+
 // chrome.storage.local.get(["styleLoaded"]).then((result) => {
 // 	console.log('Background script', result)
 // 	chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
@@ -21,23 +23,59 @@
 // Background script (Service Worker)
 
 chrome.storage.local.get(["translate"]).then((result) => {
-	console.log("translate is" + result.translate);
-	enableOrDisableTranslation(result.translate);
+	console.log("translate is " + result.translate);
+	translateRoles(result.translate ? 'ka' : 'en');
 });
 
 chrome.runtime.onMessage.addListener(
-	async function(message, sender, sendResponse) {
-		console.log("Message received:", message);
-
-		enableOrDisableTranslation(message.translate);
-		sendResponse({ success: true });
-		// Return true if you want to send a response asynchronously
-		return true;
+	async function(message) {
+		translateRoles(message.translate ? 'ka' : 'en');
 	}
 );
 
-function enableOrDisableTranslation(translate) {
-	if (translate) {
+async function fetchHombrewRoles(name, lang) {
+	return fetch(`${API_URL}roles/${lang}/${name}`)
+		.then((response) => response.json())
+}
+
+function updateRolesInStorage(roles) {
+	executeScript(
+		function(roles) {
+			localStorage.setItem("roles", JSON.stringify(roles));
+		},
+		function() {
+			console.log("Roles have been saved to local storage.");
+		},
+		[roles]
+	);
+}
+
+function translateRoles(lang) {
+	executeScript(
+		async function() {
+			const edition = JSON.parse(localStorage.getItem("edition")).edition;
+
+			return edition;
+		},
+		async function(edition) {
+			if (edition.id === "homebrew") {
+				try {
+					const data = await fetchHombrewRoles(edition.name, lang);
+					updateRolesInStorage(data);
+					console.log("Roles have been stored in the database.");
+				} catch (error) {
+					console.error(error);
+				}
+			}
+
+			translateBaseRoles(lang);
+			executeScript(() => window.location.reload());
+		}
+	);
+}
+
+function translateBaseRoles(lang) {
+	if (lang === 'ka') {
 		chrome.declarativeNetRequest.updateStaticRules({
 			rulesetId: "ruleset_1",
 			enableRuleIds: [1]
@@ -51,3 +89,27 @@ function enableOrDisableTranslation(translate) {
 
 }
 
+function executeScript(scriptFunction, onResult, args = []) {
+	console.log("executing script");
+	return chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+		const activeTab = tabs[0];
+		console.log(activeTab);
+		if (!activeTab) return;
+
+		if (!activeTab.url.includes('botc.app')) {
+			console.error('You must be on the Blood on the Clocktower website to use this extension.');
+		} else {
+			chrome.scripting.executeScript(
+				{
+					target: { tabId: activeTab.id },
+					function: scriptFunction,
+					args: args
+				},
+				function(results) {
+					console.log(results);
+					onResult && onResult(results[0].result);
+				}
+			);
+		}
+	});
+}

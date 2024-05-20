@@ -1,1 +1,1 @@
-export const API_URL = 'https://api.clocktower.ge/v1/'
+export const API_URL = 'http://localhost:8000/v1/'

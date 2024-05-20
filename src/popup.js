@@ -59,13 +59,7 @@ styleCheckbox.addEventListener('change', function() {
 
 translateCheckbox.addEventListener('change', function() {
 	chrome.storage.local.set({ translate: Number(translateCheckbox.checked) });
-	chrome.runtime.sendMessage({ translate: translateCheckbox.checked }, function(response) {
-		executeScript(
-			function() {
-				window.location.reload();
-			}
-		);
-	});
+	chrome.runtime.sendMessage({ translate: translateCheckbox.checked });
 });
 
 backgroundCheckbox.addEventListener('change', function() {
