@@ -5,7 +5,7 @@
     "action": {
       "type": "redirect",
       "redirect": {
-        "url": "https://api.clocktower.ge/v1/roles"
+        "url": "https://api.clocktower.ge/v1/roles/ka/base"
       }
     },
     "condition": {
