@@ -24,6 +24,8 @@ let wrapper = document.querySelector('.wrapper');
 let styleCheckbox = document.getElementById('style');
 let translateCheckbox = document.getElementById('translate');
 let backgroundCheckbox = document.getElementById('background');
+let controls = document.querySelector('.controls');
+controls.style.display = 'none';
 
 chrome.storage.local.get(['styleLoaded'], function(result) {
 	if (result.styleLoaded) {
@@ -43,43 +45,11 @@ chrome.storage.local.get(['background'], function(result) {
 	}
 });
 
-styleCheckbox.addEventListener('change', function() {
-	if (styleCheckbox.checked) {
-		chrome.storage.local.set({ styleLoaded: 1 });
-		chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-			chrome.tabs.sendMessage(tabs[0].id, { action: LOAD_STYLES });
-		});
-	} else {
-		chrome.storage.local.set({ styleLoaded: 0 });
-		chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-			chrome.tabs.sendMessage(tabs[0].id, { action: UNLOAD_STYLES });
-		});
-	}
-});
+styleCheckbox.addEventListener('change', checkStyles);
 
-translateCheckbox.addEventListener('change', function() {
-	chrome.storage.local.set({ translate: Number(translateCheckbox.checked) });
-	chrome.runtime.sendMessage({ translate: translateCheckbox.checked });
-});
+translateCheckbox.addEventListener('change', checkTranslate);
 
-backgroundCheckbox.addEventListener('change', function() {
-	chrome.storage.local.set({ background: Number(backgroundCheckbox.checked) });
-	if (backgroundCheckbox.checked) {
-		executeScript(
-			function() {
-				localStorage.setItem('background', 'https://api.clocktower.ge/v1/background');
-				window.location.reload();
-			}
-		);
-	} else {
-		executeScript(
-			function() {
-				localStorage.removeItem('background');
-				window.location.reload();
-			}
-		);
-	}
-});
+backgroundCheckbox.addEventListener('change', checkBackground);
 
 chrome.runtime.onMessage.addListener(
 	function(request, sender, sendResponse) {
@@ -137,6 +107,44 @@ function main({ token, game, players, storytellers, session, playerNames }) {
 	}
 }
 
+function checkStyles() {
+	if (styleCheckbox.checked) {
+		chrome.storage.local.set({ styleLoaded: 1 });
+		chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+			chrome.tabs.sendMessage(tabs[0].id, { action: LOAD_STYLES });
+		});
+	} else {
+		chrome.storage.local.set({ styleLoaded: 0 });
+		chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+			chrome.tabs.sendMessage(tabs[0].id, { action: UNLOAD_STYLES });
+		});
+	}
+}
+
+function checkTranslate() {
+	chrome.storage.local.set({ translate: Number(translateCheckbox.checked) });
+	chrome.runtime.sendMessage({ translate: translateCheckbox.checked });
+}
+
+function checkBackground() {
+	chrome.storage.local.set({ background: Number(backgroundCheckbox.checked) });
+	if (backgroundCheckbox.checked) {
+		executeScript(
+			function() {
+				localStorage.setItem('background', 'https://api.clocktower.ge/v1/background');
+				window.location.reload();
+			}
+		);
+	} else {
+		executeScript(
+			function() {
+				localStorage.removeItem('background');
+				window.location.reload();
+			}
+		);
+	}
+}
+
 function isAuthorized() {
 	let token = localStorage.getItem("accessToken");
 	if (token) {
@@ -155,6 +163,7 @@ function isAuthorized() {
 }
 
 function showAuth() {
+	controls.style.display = 'none';
 	wrapper.innerHTML = '';
 
 	let authContainer = document.createElement('div');
@@ -219,6 +228,10 @@ function login(username, password, bocId) {
 			chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
 				chrome.tabs.sendMessage(tabs[0].id, { action: STORE_ACCESS_TOKEN, token: data.accessToken });
 			});
+
+			checkStyles();
+			checkTranslate();
+			checkBackground();
 
 			populate();
 		})
@@ -294,21 +307,22 @@ function logout() {
 	chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
 		chrome.tabs.sendMessage(tabs[0].id, { action: REMOVE_ACCESS_TOKEN });
 	});
-	showAuth();
 }
 
 function populate() {
+	controls.style.display = 'block';
 	wrapper.innerHTML = '';
-	if (!state.userType) {
-		throwErrorAndResetState('You must be a player or storyteller to rate players.');
-		return;
-	}
 
 	let logoutElement = document.createElement('span');
 	logoutElement.classList.add('logout');
 	logoutElement.textContent = 'Logout';
 	logoutElement.addEventListener('click', logout);
 	wrapper.appendChild(logoutElement);
+
+	if (!state.userType) {
+		throwErrorAndResetState('You must be a player or storyteller to rate players.');
+		return;
+	}
 
 	for (let index in state.players) {
 		let playerId = state.players[index].id;
@@ -382,8 +396,9 @@ function executeScript(scriptFunction, onResult) {
 	});
 }
 export function throwErrorAndResetState(text) {
-	wrapper.innerHTML = '';
-	wrapper.textContent = text;
-	wrapper.classList.add('error');
+	let errorText = document.createElement('div');
+	errorText.textContent = text;
+	wrapper.appendChild(errorText);
+	errorText.classList.add('error');
 	state = initialState;
 }

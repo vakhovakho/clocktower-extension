@@ -4,31 +4,28 @@ import { startCenterObserver, stopCenterObserver } from "./centerObserver";
 import { loadStyles } from "./functions";
 import { API_URL } from "./env";
 
-function gameEnded(game) {
-	return game.history.length > 1 && game.history[game.history.length - 1].type === "end";
-}
-
-function isAuthorized() {
-	let token = localStorage.getItem("mastermindAccessToken");
-	if (token) {
-		let decoded = jwtDecode(token);
-		if (decoded.exp > Date.now()) {
-			return true;
-		}
-		localStorage.removeItem("mastermindAccessToken");
-	}
-
-	return false;
-}
 
 // when everything loads
 window.onload = function() {
-	if (!isAuthorized()) {
-		setTimeout(() => {
-			alert("You are not authorized to use this extension. Please log in and try again.");
-		}, 5000);
-		return;
-	}
+	chrome.storage.local.get(["styleLoaded"]).then(async (result) => {
+		if (isAuthorized() && result.styleLoaded === 1) {
+			try {
+				await loadStyles();
+				startCenterObserver()
+			} catch (e) {
+				console.error(e);
+			}
+		}
+	});
+
+	chrome.storage.local.get(["translate"]).then(async (result) => {
+		console.log(isAuthorized(), result.translate);
+		if (!isAuthorized() && result.translate) {
+			console.log("removing translate");
+			chrome.storage.local.set({ translate: false });
+			chrome.runtime.sendMessage({ translate: false });
+		}
+	});
 
 	let interval = setInterval(() => {
 		if (isStoryteller() && !isTracking) {
@@ -66,6 +63,23 @@ function startTracking() {
 			sendData(storageData);
 		}
 	}, 5000);
+}
+
+function gameEnded(game) {
+	return game.history.length > 1 && game.history[game.history.length - 1].type === "end";
+}
+
+function isAuthorized() {
+	let token = localStorage.getItem("mastermindAccessToken");
+	if (token) {
+		let decoded = jwtDecode(token);
+		if (decoded.exp > Date.now()) {
+			return true;
+		}
+		localStorage.removeItem("mastermindAccessToken");
+	}
+
+	return false;
 }
 
 function trackEndgame(recentData) {
@@ -130,16 +144,6 @@ function sendData(data) {
 		})
 }
 
-chrome.storage.local.get(["styleLoaded"]).then(async (result) => {
-	if (result.styleLoaded === 1) {
-		try {
-			await loadStyles();
-			startCenterObserver()
-		} catch (e) {
-			console.error(e);
-		}
-	}
-});
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	switch (request.action) {
@@ -164,6 +168,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 			break;
 		case REMOVE_ACCESS_TOKEN:
 			localStorage.removeItem("mastermindAccessToken");
+			window.location.reload();
 			break;
 		default:
 			break;

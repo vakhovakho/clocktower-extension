@@ -2,24 +2,6 @@
 
 import { API_URL } from "./env";
 
-// chrome.storage.local.get(["styleLoaded"]).then((result) => {
-// 	console.log('Background script', result)
-// 	chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-// 		console.log(tabs[0].url)
-// 	});
-// 	if (result.styleLoaded === 1) {
-// 		loadStyles();
-// 	}
-// });
-
-// chrome.storage.local.get(["translate"]).then((result) => {
-// 	console.log("translate is" + result.translate);
-// 	if (Number(result.translate) === 1) {
-// 		console.log("translating")
-// 		translate();
-// 	}
-// });
-
 // Background script (Service Worker)
 
 chrome.storage.local.get(["translate"]).then((result) => {
@@ -29,6 +11,7 @@ chrome.storage.local.get(["translate"]).then((result) => {
 
 chrome.runtime.onMessage.addListener(
 	async function(message) {
+		if (message.translate == null) return;
 		translateRoles(message.translate ? 'ka' : 'en');
 	}
 );
@@ -64,7 +47,7 @@ function translateRoles(lang) {
 					updateRolesInStorage(data);
 					console.log("Roles have been stored in the database.");
 				} catch (error) {
-					console.error(error);
+					console.log(error);
 				}
 			}
 
@@ -97,7 +80,7 @@ function executeScript(scriptFunction, onResult, args = []) {
 		if (!activeTab) return;
 
 		if (!activeTab.url.includes('botc.app')) {
-			console.error('You must be on the Blood on the Clocktower website to use this extension.');
+			console.log('You must be on the Blood on the Clocktower website to use this extension.');
 		} else {
 			chrome.scripting.executeScript(
 				{
