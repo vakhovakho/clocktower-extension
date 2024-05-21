@@ -1,0 +1,1 @@
+chrome.storage.local.get(["translate"]).then(e=>{t(e.translate?"ka":"en")});chrome.runtime.onMessage.addListener(async function(e){e.translate!=null&&t(e.translate?"ka":"en")});function t(e){e==="ka"?chrome.declarativeNetRequest.updateStaticRules({rulesetId:"ruleset_1",enableRuleIds:[1]}):chrome.declarativeNetRequest.updateStaticRules({rulesetId:"ruleset_1",disableRuleIds:[1]})}

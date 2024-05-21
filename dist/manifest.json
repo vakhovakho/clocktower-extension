@@ -64,12 +64,12 @@
         "https://botc.app/*"
       ],
       "js": [
-        "./assets/content-ClXfsgyc.js"
+        "./assets/content-D9H_qGtS.js"
       ]
     }
   ],
   "background": {
-    "service_worker": "./assets/background-K9oZR8Zg.js",
+    "service_worker": "./assets/background-eAR2nd_l.js",
     "type": "module"
   }
 }

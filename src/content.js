@@ -18,14 +18,14 @@ window.onload = function() {
 		}
 	});
 
-	chrome.storage.local.get(["translate"]).then(async (result) => {
-		console.log(isAuthorized(), result.translate);
-		if (!isAuthorized() && result.translate) {
-			console.log("removing translate");
-			chrome.storage.local.set({ translate: false });
-			chrome.runtime.sendMessage({ translate: false });
-		}
-	});
+	// chrome.storage.local.get(["translate"]).then(async (result) => {
+	// 	console.log(isAuthorized(), result.translate);
+	// 	if (!isAuthorized() && result.translate) {
+	// 		console.log("removing translate");
+	// 		chrome.storage.local.set({ translate: false });
+	// 		chrome.runtime.sendMessage({ translate: false });
+	// 	}
+	// });
 
 	let interval = setInterval(() => {
 		if (isStoryteller() && !isTracking) {
@@ -168,7 +168,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 			break;
 		case REMOVE_ACCESS_TOKEN:
 			localStorage.removeItem("mastermindAccessToken");
-			window.location.reload();
 			break;
 		default:
 			break;

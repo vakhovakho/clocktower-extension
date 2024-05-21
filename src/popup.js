@@ -123,7 +123,13 @@ function checkStyles() {
 
 function checkTranslate() {
 	chrome.storage.local.set({ translate: Number(translateCheckbox.checked) });
-	chrome.runtime.sendMessage({ translate: translateCheckbox.checked });
+	chrome.runtime.sendMessage({ translate: translateCheckbox.checked }, () => {
+		executeScript(
+			function() {
+				window.location.reload();
+			}
+		);
+	});
 }
 
 function checkBackground() {
@@ -306,6 +312,8 @@ function logout() {
 	localStorage.removeItem('accessToken');
 	chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
 		chrome.tabs.sendMessage(tabs[0].id, { action: REMOVE_ACCESS_TOKEN });
+		translateCheckbox.checked = false;
+		checkTranslate();
 	});
 }
 
