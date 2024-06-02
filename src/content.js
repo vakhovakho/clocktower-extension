@@ -42,9 +42,7 @@ function startTracking() {
 	let recentData = {
 		phase: -1,
 		ended: false,
-		winner: '',
 	}
-	trackEndgame(recentData);
 
 	setInterval(() => {
 		console.log("tracking");
@@ -53,16 +51,27 @@ function startTracking() {
 		if (storageData.game.isRunning && storageData.game.phase !== recentData.phase) {
 			recentData.phase = storageData.game.phase;
 			recentData.ended = false;
-			recentData.winner = ''
+			populateVoteHistory(storageData);
 			sendData(storageData);
 		} else if (gameEnded(storageData.game) && !recentData.ended) {
-			storageData.winner = recentData.winner;
 			recentData.ended = true;
 			recentData.phase = -1;
-			recentData.winner = '';
+			populateVoteHistory(storageData);
 			sendData(storageData);
 		}
 	}, 5000);
+}
+
+function populateVoteHistory(storageData) {
+	storageData.voteHistory.forEach(entry => {
+		let playerNames = [...document.querySelectorAll("#center .circle li .name span")].map(d => d.textContent);
+		let nomineeIndex = playerNames.indexOf(entry.nominee);
+		let nominatorIndex = playerNames.indexOf(entry.nominator);
+		let nomineeId = storageData.players[nomineeIndex].id;
+		let nominatorId = storageData.players[nominatorIndex].id;
+		entry.nomineeId = nomineeId;
+		entry.nominatorId = nominatorId;
+	});
 }
 
 function gameEnded(game) {
@@ -81,38 +90,6 @@ function isAuthorized() {
 
 	return false;
 }
-
-function trackEndgame(recentData) {
-	document.body.addEventListener('click', e => {
-		if (e.target.tagName === 'LI') {
-			if (e.target.textContent.trim().toLowerCase().startsWith('reveal grimoire')) {
-				setTimeout(registerListeners, 0);
-			}
-		}
-
-	})
-
-	document.addEventListener('keyup', e => {
-		if (e.key === "g") {
-			setTimeout(registerListeners, 0)
-		}
-	});
-
-	function registerListeners() {
-		document.querySelectorAll('button').forEach(button => {
-			button.addEventListener('click', () => {
-				let buttonText = button.textContent.trim().toLowerCase();
-				if (buttonText.startsWith('good won')) {
-					recentData.winner = 'good';
-				} else if (buttonText.startsWith('evil won')) {
-					recentData.winner = 'evil'
-				}
-			})
-
-		});
-	}
-}
-
 
 function isStoryteller() {
 	let token = localStorage.getItem("token");
