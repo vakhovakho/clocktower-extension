@@ -237,7 +237,7 @@ function login(username, password, bocId) {
 
 			checkStyles();
 			checkTranslate();
-			checkBackground();
+			// checkBackground();
 
 			populate();
 		})
