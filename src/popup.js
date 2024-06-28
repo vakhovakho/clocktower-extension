@@ -17,7 +17,10 @@ let initialState = {
 	players: [],
 	storytellers: [],
 	spectators: [],
+	reportedUsers: [],
+	isModerator: false
 };
+
 
 let state = initialState;
 let wrapper = document.querySelector('.wrapper');
@@ -91,6 +94,13 @@ function main({ token, game, players, storytellers, session, playerNames }) {
 	state.session = session;
 	state.storytellers = storytellers;
 	state.playerNames = playerNames;
+
+	if (localStorage.getItem('accessToken')) {
+		state.isModerator = jwtDecode(localStorage.getItem('accessToken')).moderator;
+		if (state.isModerator) {
+			getReportedUsers();
+		}
+	}
 
 	if (players.find(player => player.id === state.bocId)) {
 		state.userType = PLAYER_TYPE.PLAYER;
@@ -231,6 +241,12 @@ function login(username, password, bocId) {
 				throw new Error(data.message);
 			}
 			localStorage.setItem('accessToken', data.accessToken);
+
+			state.isModerator = jwtDecode(data.accessToken).moderator;
+			if (state.isModerator) {
+				getReportedUsers();
+			}
+
 			chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
 				chrome.tabs.sendMessage(tabs[0].id, { action: STORE_ACCESS_TOKEN, token: data.accessToken });
 			});
@@ -342,6 +358,9 @@ function populate() {
 		let label = document.createElement('label');
 		label.setAttribute('for', playerId + "_" + index);
 		label.textContent = playerName;
+		if (state.reportedUsers.find(userId => userId === playerId)) {
+			label.style.color = 'red';
+		}
 
 		let input = document.createElement('input');
 		input.type = 'radio';
@@ -350,8 +369,17 @@ function populate() {
 		input.id = playerId + "_" + index;
 
 
+
 		playerDiv.appendChild(label);
 		playerDiv.appendChild(input);
+		console.log(state);
+		if (state.isModerator) {
+			let reportButton = document.createElement('button');
+			reportButton.textContent = 'Report';
+			reportButton.addEventListener('click', () => report(playerId));
+			playerDiv.appendChild(reportButton);
+		}
+
 		wrapper.appendChild(playerDiv);
 	}
 
@@ -360,6 +388,60 @@ function populate() {
 	button.addEventListener('click', vote);
 
 	wrapper.appendChild(button);
+}
+
+function report(playerId) {
+	let reason = prompt('Please enter the reason for reporting this player', '');
+	if (reason === null || reason === '') {
+		return;
+	}
+	fetch(API_URL + 'report', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': 'JWT ' + localStorage.getItem('accessToken') || ''
+		},
+		body: JSON.stringify({
+			reportedUserBocId: playerId,
+			session: state.session,
+			reason
+		})
+	}).then(response => {
+		if (!response.ok) {
+			alert('Error: ' + response.statusText);
+		}
+		return response.json();
+	}).then(data => {
+		if (data.status !== 'success') {
+			throw new Error(data.message);
+		}
+		alert('Report Sent');
+	}).catch(error => {
+		alert('Error: ' + error.message)
+	});
+}
+
+function getReportedUsers() {
+	fetch(API_URL + 'report/get-all', {
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': 'JWT ' + localStorage.getItem('accessToken') || ''
+		}
+	}).then(response => {
+		if (!response.ok) {
+			alert('Error: ' + response.statusText);
+		}
+		return response.json();
+	}).then(res => {
+		if (res.status !== 'success') {
+			throw new Error(res.message);
+		}
+		state.reportedUsers = res.data;
+		populate();
+	}).catch(error => {
+		alert('Error: ' + error.message)
+	});
 }
 
 function vote() {
