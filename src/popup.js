@@ -343,8 +343,8 @@ function populate() {
 	logoutElement.addEventListener('click', logout);
 	wrapper.appendChild(logoutElement);
 
-	if (!state.userType) {
-		throwErrorAndResetState('You must be a player or storyteller to rate players.');
+	if (!state.userType && !state.isModerator) {
+		throwErrorAndResetState('You must be a player, storyteller or moderator  to rate players.');
 		return;
 	}
 
