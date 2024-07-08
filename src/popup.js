@@ -97,9 +97,7 @@ function main({ token, game, players, storytellers, session, playerNames }) {
 
 	if (localStorage.getItem('accessToken')) {
 		state.isModerator = jwtDecode(localStorage.getItem('accessToken')).moderator;
-		if (state.isModerator) {
-			getReportedUsers();
-		}
+		getReportedUsers();
 	}
 
 	if (players.find(player => player.id === state.bocId)) {
@@ -360,6 +358,7 @@ function populate() {
 		label.textContent = playerName;
 		if (state.reportedUsers.find(userId => userId === playerId)) {
 			label.style.color = 'red';
+			label.style.fontWeight = 'bold';
 		}
 
 		let input = document.createElement('input');
