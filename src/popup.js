@@ -468,6 +468,7 @@ function getMyReport() {
 		if (res.status !== 'success') {
 			throw new Error(res.message);
 		}
+		if (!res.data) return;
 		let h3 = document.createElement('h3');
 		h3.textContent = 'You are reported!';
 		let p1 = document.createElement('p');
