@@ -18,7 +18,8 @@ let initialState = {
 	storytellers: [],
 	spectators: [],
 	reportedUsers: [],
-	isModerator: false
+	isModerator: false,
+	loaderCount: 0,
 };
 
 
@@ -28,6 +29,8 @@ let styleCheckbox = document.getElementById('style');
 let translateCheckbox = document.getElementById('translate');
 let backgroundCheckbox = document.getElementById('background');
 let controls = document.querySelector('.controls');
+let infoDiv = document.querySelector('.info');
+let loaderWrapper = document.querySelector('.loader-wrapper');
 controls.style.display = 'none';
 
 chrome.storage.local.get(['styleLoaded'], function(result) {
@@ -98,6 +101,7 @@ function main({ token, game, players, storytellers, session, playerNames }) {
 	if (localStorage.getItem('accessToken')) {
 		state.isModerator = jwtDecode(localStorage.getItem('accessToken')).moderator;
 		getReportedUsers();
+		getMyReport();
 	}
 
 	if (players.find(player => player.id === state.bocId)) {
@@ -371,7 +375,6 @@ function populate() {
 
 		playerDiv.appendChild(label);
 		playerDiv.appendChild(input);
-		console.log(state);
 		if (state.isModerator) {
 			let reportButton = document.createElement('button');
 			reportButton.textContent = 'Report';
@@ -421,6 +424,7 @@ function report(playerId) {
 }
 
 function getReportedUsers() {
+	showLoader();
 	fetch(API_URL + 'report/get-all', {
 		method: 'GET',
 		headers: {
@@ -440,6 +444,44 @@ function getReportedUsers() {
 		populate();
 	}).catch(error => {
 		alert('Error: ' + error.message)
+	}).finally(() => {
+		hideLoader();
+	});
+}
+
+function getMyReport() {
+	showLoader();
+	infoDiv.innerHTML = '';
+	infoDiv.classList.add('hidden');
+	fetch(API_URL + 'report/mine', {
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': 'JWT ' + localStorage.getItem('accessToken') || ''
+		}
+	}).then(response => {
+		if (!response.ok) {
+			alert('Error: ' + response.statusText);
+		}
+		return response.json();
+	}).then(res => {
+		if (res.status !== 'success') {
+			throw new Error(res.message);
+		}
+		let h3 = document.createElement('h3');
+		h3.textContent = 'You are reported!';
+		let p1 = document.createElement('p');
+		p1.textContent = `Reason: ${res.data.reason}`;
+		let p2 = document.createElement('p');
+		p2.textContent = `Until: ${new Date(res.data.reportedUntil).toLocaleString()}`;
+		infoDiv.appendChild(h3);
+		infoDiv.appendChild(p1);
+		infoDiv.appendChild(p2);
+		infoDiv.classList.remove('hidden');
+	}).catch(error => {
+		alert('Error: ' + error.message)
+	}).finally(() => {
+		hideLoader();
 	});
 }
 
@@ -491,3 +533,18 @@ export function throwErrorAndResetState(text) {
 	errorText.classList.add('error');
 	state = initialState;
 }
+
+function showLoader() {
+	state.loaderCount++;
+	if (state.loaderCount > 0) {
+		loaderWrapper.classList.remove('hidden');
+	}
+}
+
+function hideLoader() {
+	state.loaderCount--;
+	if (state.loaderCount <= 0) {
+		loaderWrapper.classList.add('hidden');
+	}
+}
+
