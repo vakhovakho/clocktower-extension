@@ -1,8 +1,12 @@
 ul.storytellers li.storyteller:not(.group):first-of-type, ul.storytellers li.storyteller:not(.group):nth-of-type(2) {
-    width: min(26vw, 26vh) !important;
+    width: min(32vw, 32vh) !important;
     position: fixed !important;
     bottom: 42px !important;
     left: 80px !important;
+}
+
+ul.storytellers li.storyteller:not(.group):first-of-type .nameplate, ul.storytellers li.storyteller:not(.group):nth-of-type(2) .nameplate {
+	top: calc(min(32vw, 32vh) - 20px);
 }
 
 ul.storytellers li.storyteller:not(.group):nth-of-type(2) {
@@ -38,7 +42,7 @@ ul#whispers.small {
     width: 25vh !important;
 }
 
-ul#whispers .video .chat:hover {
+ul#whispers .video .chat-video:hover {
 	opacity: 1 !important;
 }
 
@@ -124,9 +128,17 @@ aside.tab .container {
 }
 
 #version * {
-	display: none !important;
+	visibility: hidden !important;
+}
+
+#version:hover * {
+	visibility: visible !important;
 }
 
 #version .timer {
-	display: block !important;
+	visibility: visible !important;
+}
+
+#version .timer * {
+	visibility: visible !important;
 }

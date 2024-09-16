@@ -17,8 +17,8 @@ const observer = new MutationObserver(records => {
 			let inChatName = inChatNameDiv.innerText.trim();
 			if (inChatName.startsWith(name)) {
 				stDivsInChat[j].style.position = 'fixed';
-				stDivsInChat[j].style.bottom = '106px';
-				stDivsInChat[j].style.width = 'min(26vw, 26vh)';
+				stDivsInChat[j].style.bottom = '20px';
+				stDivsInChat[j].style.width = 'min(32vw, 32vh)';
 				stDivsInChat[j].style[i === 0 ? 'left' : 'right'] = '80px';
 				inChatChat.style.borderRadius = '50%';
 				inChatVideo.style.borderRadius = '50%';
