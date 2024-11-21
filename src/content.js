@@ -1,6 +1,5 @@
 import { jwtDecode } from "jwt-decode";
 import { LOAD_STYLES, REMOVE_ACCESS_TOKEN, STORE_ACCESS_TOKEN, UNLOAD_STYLES } from "./actions";
-import { startCenterObserver, stopCenterObserver } from "./centerObserver";
 import { loadStyles } from "./functions";
 import { API_URL } from "./env";
 
@@ -11,7 +10,6 @@ window.onload = function() {
 		if (isAuthorized() && result.styleLoaded === 1) {
 			try {
 				await loadStyles();
-				startCenterObserver()
 			} catch (e) {
 				console.error(e);
 			}
@@ -126,14 +124,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	switch (request.action) {
 		case LOAD_STYLES:
 			loadStyles();
-			startCenterObserver();
 			break;
 		case UNLOAD_STYLES:
 			let style = document.getElementById('mastermind-style');
 			if (style) {
 				style.remove();
 			}
-			stopCenterObserver();
 			break;
 		case "ALERT":
 			alert(request.message);

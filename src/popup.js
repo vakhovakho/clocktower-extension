@@ -260,7 +260,7 @@ function login(username, password, bocId) {
 			populate();
 		})
 		.catch(error => {
-			alert('Error: ' + error.message)
+			console.error('Error: ' + error.message)
 		});
 }
 
@@ -286,7 +286,7 @@ function register(username, password, bocId) {
 			populate();
 		})
 		.catch(error => {
-			alert('Error: ' + error.message)
+			console.error('Error: ' + error.message)
 		});
 
 }
@@ -322,7 +322,7 @@ function sendVote(gameId, receiverId) {
 			alert('Vote sent');
 		})
 		.catch(error => {
-			alert('Error: ' + error.message)
+			console.error('Error: ' + error.message)
 		});
 }
 
@@ -410,7 +410,7 @@ function report(playerId) {
 		})
 	}).then(response => {
 		if (!response.ok) {
-			alert('Error: ' + response.statusText);
+			console.error('Error: ' + response.statusText);
 		}
 		return response.json();
 	}).then(data => {
@@ -419,7 +419,7 @@ function report(playerId) {
 		}
 		alert('Report Sent');
 	}).catch(error => {
-		alert('Error: ' + error.message)
+		console.error('Error: ' + error.message)
 	});
 }
 
@@ -433,7 +433,7 @@ function getReportedUsers() {
 		}
 	}).then(response => {
 		if (!response.ok) {
-			alert('Error: ' + response.statusText);
+			console.error('Error: ' + response.statusText);
 		}
 		return response.json();
 	}).then(res => {
@@ -443,7 +443,7 @@ function getReportedUsers() {
 		state.reportedUsers = res.data;
 		populate();
 	}).catch(error => {
-		alert('Error: ' + error.message)
+		console.error('Error: ' + error.message)
 	}).finally(() => {
 		hideLoader();
 	});
@@ -483,6 +483,7 @@ function getMyReport() {
 		alert('Error: ' + error.message)
 	}).finally(() => {
 		hideLoader();
+		console.error('Error: ' + error.message)
 	});
 }
 
